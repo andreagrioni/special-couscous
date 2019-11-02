@@ -9,6 +9,7 @@ repository of miscellaneous tools
             pandas
             seaborn
             matplotlib
+            
         Feed sequences from CL:
             dotgenik.py --x nt_sequence --y nt_sequence --name image_name --out output_directory 
         Feed sequences through table:
@@ -16,4 +17,4 @@ repository of miscellaneous tools
 
         *(input_tsv table as column: x_nt_seq, y_nt_seq, labels)
 
-        ![dotgenik example](https://github.com/andreagrioni/special-couscous/blob/master/dotgenik/test1.png)
+<img src="./dotgenik/test1.png" width=250 align="center">
