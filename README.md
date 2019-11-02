@@ -15,3 +15,5 @@ repository of miscellaneous tools
             dotgenik.py --table input_tsv --name image_name --out output_directory
 
         *(input_tsv table as column: x_nt_seq, y_nt_seq, labels)
+
+        ![dotgenik example](https://github.com/andreagrioni/special-couscous/blob/master/dotgenik/test1.png)
