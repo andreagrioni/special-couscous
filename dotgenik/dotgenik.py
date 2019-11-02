@@ -1,5 +1,25 @@
 #!/usr/bin/env python
 
+"""
+dotgenik creates heatmaps of dot matrix between nucleotide sequences.
+it can be run by providing x and y sequences from the CL or it can read
+an input tsv table with 3 columns: x_sequence, y_sequence, label.
+
+dotgenik requires:
+python3.7
+   matplotlib
+   seaborn
+   pandas
+
+Usage:
+dotgenik.py --x nt_sequence --y nt_sequence --name image_name --out output_directory 
+
+dotgenik.py --table input_tsv --name image_name --out output_directory
+
+options:
+--samples=select N random samples from the input table.
+"""
+
 import argparse
 import os
 import pandas as pd
