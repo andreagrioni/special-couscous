@@ -40,7 +40,7 @@ def watson_crick(x_nt, y_nt, alphabet=None):
     alphabet = dict of nt_pair:score
     """
     if not alphabet:
-        alphabet = {"AT": 1, "GC": 1, "CG": 1, "TA": 1}
+        alphabet = {"AT": 150, "TA": 150, "GC": 255, "CG": 255}
     pair = x_nt + y_nt
     # print(alphabet, pair, alphabet[pair], sep="\t")
     return alphabet.get(pair, 0)
