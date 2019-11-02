@@ -9,6 +9,7 @@ repository of miscellaneous tools
             pandas
             seaborn
             matplotlib
+            
         Feed sequences from CL:
             dotgenik.py --x nt_sequence --y nt_sequence --name image_name --out output_directory 
         Feed sequences through table:
