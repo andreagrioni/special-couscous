@@ -12,7 +12,7 @@ python3.7
    pandas
 
 Usage:
-dotgenik.py --x nt_sequence --y nt_sequence --name image_name --out output_directory 
+dotgenik.py --x nt_sequence --y nt_sequence
 
 dotgenik.py --table input_tsv --name image_name --out output_directory
 
@@ -40,9 +40,8 @@ def watson_crick(x_nt, y_nt, alphabet=None):
     alphabet = dict of nt_pair:score
     """
     if not alphabet:
-        alphabet = {"AT": 150, "TA": 150, "GC": 255, "CG": 255}
+        alphabet = {"AT": 1, "TA": 1, "GC": 1, "CG": 1}
     pair = x_nt + y_nt
-    # print(alphabet, pair, alphabet[pair], sep="\t")
     return alphabet.get(pair, 0)
 
 
@@ -72,7 +71,7 @@ def make_set_hm(x_seq, y_seq, alphabet):
     return m_out
 
 
-def make_2d(x_seq, y_seq, alphabet, file_name, out_dir):
+def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels):
     """
     fun plots 2D metrics of watson-crick binding
     rules of sequence x and y as heatmap
@@ -90,8 +89,8 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir):
     FIG, AX = plt.subplots(figsize=(20, 20))
     AX = sns.heatmap(
         df,
-        xticklabels=False,
-        yticklabels=False,
+        xticklabels=labels,
+        yticklabels=labels,
         annot=False,
         cbar=False,
         cmap="Blues",
@@ -106,9 +105,9 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir):
     return None
 
 
-def make_2d_caller(row, alphabet, file_name, out_dir):
+def make_2d_caller(row, alphabet, file_name, out_dir, labels):
     fig_id = f"{row.name}_{file_name}"
-    make_2d(row.x_seq, row.y_seq, alphabet, fig_id, out_dir)
+    make_2d(row.x_seq, row.y_seq, alphabet, fig_id, out_dir, labels)
     return fig_id
 
 
@@ -120,14 +119,17 @@ def make_image_batch(args):
     paramenters:
     args=parser object with arguments
     """
-    connections_df = pd.read_csv(args.table, sep="\t", names=["x_seq", "y_seq", "labe"])
+    connections_df = pd.read_csv(
+        args.table, sep="\t", names=["x_seq", "y_seq", "labe"], header=0
+    )
     if args.samples:
-        connections_df = connections_df.sample(n=args.samples)
+        connections_df = connections_df.sample(n=args.samples, random_state=1989)
     connections_df["fig_id"] = connections_df.apply(
         make_2d_caller,
         alphabet=args.alphabet,
         file_name=args.file_name,
         out_dir=args.out_dir,
+        labels=args.labels,
         axis=1,
     )
     return None
@@ -182,6 +184,12 @@ def get_arguments():
         required=False,
         default=None,
     )
+    parser.add_argument(
+        "--labels",
+        dest="labels",
+        help="labels ticks as nt sequences (boolean)",
+        action="store_true",
+    )
     args = parser.parse_args()
     args = pre_process(args)
     return args
@@ -192,4 +200,12 @@ if __name__ == "__main__":
     if ARGS.table:
         make_image_batch(ARGS)
     else:
-        make_2d(ARGS.x_seq, ARGS.y_seq, ARGS.alphabet, ARGS.file_name, ARGS.out_dir)
+        make_2d(
+            ARGS.x_seq,
+            ARGS.y_seq,
+            ARGS.alphabet,
+            ARGS.file_name,
+            ARGS.out_dir,
+            args.labels,
+        )
+
