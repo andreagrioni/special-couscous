@@ -1,12 +1,11 @@
 #!/bin/bash
 
-### mount backup RBP_lab undert UCO 236425
 ### requirements:
 ## sudo apt-get install sshfs
 
 if [[ $@ == "" ]]
 then
-    echo -e "\nscript to mount or unmount RBP_lab backup folder in the user target directory by sshfs\n\narguments:\n\tmount_point:\tpath to taget dir\n\trsa_file:\tpath to rsa_key file\n\taction:\tmount|umount (str)\nusage:\n\tmount_backup.sh mount_point rsa_file action"
+    echo -e "\nscript to mount or unmount target folder to destination dir by sshfs\n\narguments:\n\tmount_point:\tpath to taget dir\n\trsa_file:\tpath to rsa_key file\n\taction:\tmount|umount (str)\nusage:\n\tmount_backup.sh mount_point rsa_file action"
     exit 0
 fi
 
