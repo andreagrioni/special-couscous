@@ -86,7 +86,11 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels):
     # Create binding site - mirna interaction metrics
     df = make_set_hm(x_seq, y_seq, alphabet)
     # Default heatmap: just a visualization of this square matrix
-    FIG, AX = plt.subplots(figsize=(20, 20))
+
+    A = len(x_seq)
+    B = len(y_seq)
+
+    FIG, AX = plt.subplots(figsize=(B, A))
     AX = sns.heatmap(
         df,
         xticklabels=labels,
@@ -206,6 +210,6 @@ if __name__ == "__main__":
             ARGS.alphabet,
             ARGS.file_name,
             ARGS.out_dir,
-            args.labels,
+            ARGS.labels,
         )
 
