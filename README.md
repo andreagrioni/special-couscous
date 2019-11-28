@@ -39,5 +39,5 @@ repository of miscellaneous tools
 
          usage:
 
-            python main.py \
+            python randomseq.py \
                  --reference path/to/genome/reference/ --N integer --int_size integer
