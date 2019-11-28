@@ -1,6 +1,5 @@
 import subprocess
 import os
-import io
 
 
 def get_fasta(reference, bed_input, output_name, opt=""):
