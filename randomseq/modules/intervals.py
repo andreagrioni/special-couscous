@@ -30,7 +30,7 @@ def load_db(file_name, feature="all"):
     return load_df
 
 
-def generate_intervals(db, int_size, N, seed=1989):
+def generate_intervals(db, int_size, N):
     def pick_random(row, int_size):
         new_start = random.randint(row.start, row.end - int_size)
         new_end = new_start + int_size
@@ -42,15 +42,16 @@ def generate_intervals(db, int_size, N, seed=1989):
 
     y = copy.copy(db)
     y["diff"] = y["end"] - y["start"]
-    y_sel = copy.copy(y[y["diff"] > int_size]).sample(n=N, random_state=seed)
+    y_copy = copy.copy(y[y["diff"] > int_size])
+    y_sel = y_copy.sample(n=N, replace=True)
     intervals = y_sel.apply(pick_random, int_size=int_size, axis=1)
     bed_df = pd.DataFrame(intervals)
     return bed_df
 
 
-def gtf_to_bed(file_name, feature, int_size, N, seed=1989, bed_name="interval_gtf.bed"):
+def gtf_to_bed(file_name, feature, int_size, N, bed_name="interval_gtf.bed"):
     db = load_db(file_name, feature)
-    bed_df = generate_intervals(db, int_size, N, seed=1989)
+    bed_df = generate_intervals(db, int_size, N)
     bed_df.to_csv(bed_name, sep="\t", index=False, header=False)
     return bed_name
 
@@ -58,6 +59,5 @@ def gtf_to_bed(file_name, feature, int_size, N, seed=1989, bed_name="interval_gt
 if __name__ == "__main__":
     TEST_NAME = "/home/angri/Desktop/project/special-couscous/randomseq/test/test.gtf"
     db = load_db(TEST_NAME)
-    bed_df = generate_intervals(db, 100, 10, seed=1989)
+    bed_df = generate_intervals(db, 100, 10)
     bed_df.to_csv("test.bed", sep="\t", index=False, header=False)
-

@@ -20,7 +20,7 @@ def get_fasta(reference, bed_input, output_name, opt=""):
     return output_name
 
 
-def random_interval(reference, int_size, N, seed=1989, output="random_intervals.bed"):
+def random_interval(reference, int_size, N, output="random_intervals.bed"):
     """
     fun runs bedtools random to generate random intervals
     based on input paramenters.
@@ -32,6 +32,13 @@ def random_interval(reference, int_size, N, seed=1989, output="random_intervals.
     seed=random seed (optional)
     output=output bed filename
     """
+
+    def sanify_ref_size(ref_size):
+        out_name = "ref.sanify.fai"
+        with open(ref_size, "r") as f, open(out_name, "w") as out:
+            targets = "".join([x for x in f.readlines() if "chr" in x])
+            out.write(targets)
+        return out_name
 
     def index_reference(reference):
         """
@@ -52,8 +59,32 @@ def random_interval(reference, int_size, N, seed=1989, output="random_intervals.
 
     ref_chrom_size = index_reference(reference=reference)
 
-    cmd = f"bedtools random -l {int_size} -n {N} -seed {seed} -g {ref_chrom_size} > {output}"
+    # ref_chrom_size = sanify_ref_size(ref_chrom_size)
+
+    cmd = f"bedtools random -l {int_size} -n {N} -g {ref_chrom_size} > {output}"
+
+    print(cmd)
+
     subprocess.run(cmd, shell=True, encoding="utf-8")
 
     return output
 
+
+def intersect(interval_a, interval_b, opt="", outname="filtered.bed"):
+    """
+    Fun runs bedtools intersect on a 
+    pair of intervals.
+
+    paramenters:
+    interval_a=file 1
+    interval_b=file 2
+    N=sample size
+    opt=bedtools intersect opt
+    """
+    cmd = f"bedtools intersect {opt} -a {interval_a} -b {interval_b} > {outname}"
+
+    print(cmd)
+
+    subprocess.run(cmd, shell=True, encoding="utf-8")
+
+    return outname

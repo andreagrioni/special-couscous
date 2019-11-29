@@ -1,6 +1,7 @@
 import argparse
 from modules import bedtools
 from modules import intervals
+from modules import make_random
 
 
 def parse_args(parser):
@@ -32,7 +33,22 @@ def parse_args(parser):
         dest="int_size",
         help="length of output sequences (int)",
         required=True,
-    )
+    ),
+    parser.add_argument(
+        "--avoid_int",
+        type=str,
+        dest="avoid_int",
+        help="remove random interval overlapping the input bed file regions.",
+        required=False,
+    ),
+    parser.add_argument(
+        "--fasta",
+        action="store_true",
+        dest="fasta_flag",
+        help="get fasta sequences",
+        required=False,
+        default=False,
+    ),
     parser.add_argument(
         "--output",
         type=str,
@@ -41,14 +57,6 @@ def parse_args(parser):
         required=False,
         default="sequences.tsv",
     ),
-    parser.add_argument(
-        "--seed",
-        type=str,
-        dest="random_seed",
-        help="random seed to generate intervals (int)",
-        required=False,
-        default=1989,
-    )
     parser.add_argument(
         "--bed",
         type=str,
@@ -77,7 +85,15 @@ def parse_args(parser):
         dest="getfasta_opt",
         help="bedtools options for get fasta [default -s -tab]",
         required=False,
-        default="-s -tab",
+        default="-tab",
+    ),
+    parser.add_argument(
+        "--intersect_opt",
+        type=str,
+        dest="intersect_opt",
+        help="bedtools options for intersect [default -v]",
+        required=False,
+        default="-v",
     )
     args = parser.parse_args()
 
@@ -92,24 +108,19 @@ if __name__ == "__main__":
 
     ARGUMENTS = parse_args(PARSER)
 
-    if not ARGUMENTS.input_bed and not ARGUMENTS.gtf_anno:
-        RANDOM_BED = bedtools.random_interval(
-            ARGUMENTS.reference, ARGUMENTS.int_size, ARGUMENTS.N, ARGUMENTS.random_seed
-        )
-    elif ARGUMENTS.gtf_anno:
-        RANDOM_BED = intervals.gtf_to_bed(
-            file_name=ARGUMENTS.gtf_anno,
-            feature=ARGUMENTS.feature,
-            int_size=ARGUMENTS.int_size,
-            N=ARGUMENTS.N,
-            seed=ARGUMENTS.random_seed,
-        )
-    elif ARGUMENTS.input_bed:
-        RANDOM_BED = ARGUMENTS.input_bed
+    RANDOM_BED = make_random.make_set(ARGUMENTS)
 
-    bedtools.get_fasta(
-        ARGUMENTS.reference,
-        RANDOM_BED,
-        ARGUMENTS.output_name,
-        opt=ARGUMENTS.getfasta_opt,
-    )
+    if ARGUMENTS.fasta_flag and RANDOM_BED:
+        print(f"extract sequences from BED file {RANDOM_BED}")
+        bedtools.get_fasta(
+            ARGUMENTS.reference,
+            RANDOM_BED,
+            ARGUMENTS.output_name,
+            opt=ARGUMENTS.getfasta_opt,
+        )
+
+    elif not ARGUMENTS.fasta_flag and RANDOM_BED:
+        print(f"random intervals stored at {RANDOM_BED}")
+
+    else:
+        print("nothing to do")
