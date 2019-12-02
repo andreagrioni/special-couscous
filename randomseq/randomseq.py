@@ -83,9 +83,10 @@ def parse_args(parser):
         "--getfasta_opt",
         type=str,
         dest="getfasta_opt",
-        help="bedtools options for get fasta [default -s -tab]",
+        help="bedtools options for get fasta [default -tab]",
         required=False,
         default="-tab",
+        nargs="+",
     ),
     parser.add_argument(
         "--intersect_opt",
@@ -94,8 +95,14 @@ def parse_args(parser):
         help="bedtools options for intersect [default -v]",
         required=False,
         default="-v",
+        nargs="+",
     )
+
     args = parser.parse_args()
+
+    args.intersect_opt = "".join(args.intersect_opt)
+
+    args.getfasta_opt = "".join(args.getfasta_opt)
 
     return args
 
