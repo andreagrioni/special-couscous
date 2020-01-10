@@ -1,0 +1,2 @@
+conda install pybigwig -c bioconda
+conda install --channel conda-forge --channel bioconda pybedtools
