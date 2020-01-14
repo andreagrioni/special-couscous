@@ -1,2 +1,17 @@
+tools
+
 conda install pybigwig -c bioconda
 conda install --channel conda-forge --channel bioconda pybedtools
+conda install --channel conda-forge --channel bioconda bedtools htslib
+
+
+# database information:
+ENCORI DB URL: http://starbase.sysu.edu.cn/agoClipRNA.php?source=mRNA
+ENCORI DB coordinates are in hg19.
+
+Repeat Mask from UCSC table browser, hg19.
+
+Annotation from GenCode, version 19 (GRCh37.p13).
+FileName: gencode.v19.chr_patch_hapl_scaff.annotation.gtf.gz
+GenCode URL: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_19/gencode.v19.chr_patch_hapl_scaff.annotation.gtf.gz
+
