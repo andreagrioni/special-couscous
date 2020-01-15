@@ -15,3 +15,5 @@ Annotation from GenCode, version 19 (GRCh37.p13).
 FileName: gencode.v19.chr_patch_hapl_scaff.annotation.gtf.gz
 GenCode URL: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_19/gencode.v19.chr_patch_hapl_scaff.annotation.gtf.gz
 
+conservation track from UCSC
+http://hgdownload.soe.ucsc.edu/goldenPath/hg19/phyloP100way/hg19.100way.phyloP100way.bw

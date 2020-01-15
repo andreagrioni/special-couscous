@@ -17,7 +17,6 @@ def clean_annotation(annotation_path, biotype):
 
     df = pd.read_csv(annotation_path, sep="\t", comment="#", header=None, names=header)
     df_filtered = df[df["biotype"].isin(biotype)].copy().reset_index(drop=True)
-    # df_filtered[0] = df_filtered[0].str.replace("chr", "")
     return df_filtered
 
 
@@ -41,12 +40,7 @@ def load_encori(file_path):
     paramenters:
     file_path=path to encori file
     """
-
-    # df_header = "miRNAid,miRNAname,geneID,geneName,geneType,chromosome,narrowStart,narrowEnd,broadStart,broadEnd,strand,clipExpNum,degraExpNum,RBP,PITA,RNA22,miRmap,microT,miRanda,PicTar,TargetScan,pancancerNum".split(",")
-
-    df_encori = pd.read_csv(
-        file_path, comment="#", sep="\t"
-    )  # , header=None, names=df_header
+    df_encori = pd.read_csv(file_path, comment="#", sep="\t")
     return df_encori
 
 
