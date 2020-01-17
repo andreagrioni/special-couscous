@@ -1,6 +1,9 @@
 from modules import prepare_db
 from modules import filter_df
 from modules import clean_encori
+from modules import mirna_db
+from modules import extract_sequences
+
 
 # to define
 # ENCORI_PATH = path to encori db
@@ -23,6 +26,13 @@ ANNOTATION = "/home/angri/Desktop/project/special-couscous/encori/data/gencode.v
 CONS_TRACK = "/home/angri/Desktop/project/special-couscous/encori/data/hg19.100way.phyloP100way.bw"
 REF_FASTA = "/home/angri/Desktop/project/special-couscous/encori/data/hg19.fa"
 
+## mirna db info
+mirbase_db = "/home/angri/Desktop/project/special-couscous/encori/data/hsa.GRCh38.gff3"
+targetscan_db = "/home/angri/Desktop/project/special-couscous/encori/data/TargetScan_v7.2_miR_Family_info.txt"
+fasta = "/home/angri/Desktop/project/special-couscous/encori/data/GRCh38.primary_assembly.genome.fa"
+cons_test = (
+    "/home/angri/Desktop/project/special-couscous/encori/data/hg38.phyloP100way.bw"
+)
 
 if __name__ == "__main__":
     ## prepared db
@@ -46,8 +56,10 @@ if __name__ == "__main__":
     )
     encori_cons_seq_bs.to_csv("final.tsv", sep="\t", index=False)
     ## mirna processing
-    # 1) pick 1 miRNA per family
-    # 2) sequence complexity?
-
-    # create test (chr1) and train bed files
-
+    print("prepared_mirna_db")
+    mirna_db = mirna_db.wrapper(
+        targetscan_db, mirbase_db, fasta, cons_test, species=9606
+    )
+    # merge tables
+    completed_table = encori_cons_seq_bs.merge(mirna_db, on="miRNAid")
+    completed_table.to_csv("final_encori_with_info.tsv", sep="\t")

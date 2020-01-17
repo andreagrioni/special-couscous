@@ -11,7 +11,7 @@ def get_fasta(intervals, reference, tab=True, s=True, name=True):
 
 
     paramenters:
-    intervals=bed file of intervals
+    intervals=pandas dataframe
     reference=path to reference genome
     tab=True
     s=True
@@ -67,7 +67,7 @@ def extractor(df, cons_track, ref_fasta):
 
     cons = get_conservation(intervals, cons_track)
     sequence = get_fasta(intervals, ref_fasta, name=True)
-    print(sequence)
+
     final = pd.concat([df, cons, sequence], axis=1)
     return final.drop(["fasta_id"], axis=1)
 
