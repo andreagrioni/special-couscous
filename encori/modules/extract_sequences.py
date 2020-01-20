@@ -3,6 +3,26 @@ import pandas as pd
 import pyBigWig
 
 
+def gen_random_intervals(sample_size, ref_genome):
+    """
+    function creates random genomic intervals of size 10nt
+    and returns a pandas df.
+
+
+    paramenters:
+    sample_size=random samples (int)
+    ref_genome=reference genome
+    """
+    x = BedTool()
+    y = x.random(n=sample_size, l=10, genome=ref_genome)
+    bed_df = pd.read_csv(
+        y.fn,
+        sep="\t",
+        names=["chromosome", "start", "end", "miRNAid", "clipExpNum", "strand"],
+    )
+    return bed_df
+
+
 def get_fasta(intervals, reference, tab=True, s=True, name=True):
     """
     function extract fasta file sequences from 

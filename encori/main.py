@@ -1,65 +1,68 @@
 from modules import prepare_db
-from modules import filter_df
-from modules import clean_encori
+from modules import load_binding
 from modules import mirna_db
 from modules import extract_sequences
+from modules import output
+import sys
 
-
-# to define
-# ENCORI_PATH = path to encori db
-# column_names = encori db columns to dump
-# REPEAT_MASK = path to repeat mask bed file
-# ANNOTATION = path to annotation GTF file
-BIOTYPE = ["UTR"]
-
-
-# REPEAT_MASK = "./data/repeat_mask_hg19.bed"
-# ENCORI_PATH = "./data/toy_encori.tsv"
-# ANNOTATION = "./data/toy_gencode.gtf"
-
-
-REPEAT_MASK = (
-    "/home/angri/Desktop/project/special-couscous/encori/data/repeat_mask_hg19.bed"
-)
-ENCORI_PATH = "/home/angri/Desktop/project/special-couscous/encori/data/toy_encori.tsv"
-ANNOTATION = "/home/angri/Desktop/project/special-couscous/encori/data/gencode.v19.chr_patch_hapl_scaff.annotation.gtf"
-CONS_TRACK = "/home/angri/Desktop/project/special-couscous/encori/data/hg19.100way.phyloP100way.bw"
-REF_FASTA = "/home/angri/Desktop/project/special-couscous/encori/data/hg19.fa"
-
-## mirna db info
-mirbase_db = "/home/angri/Desktop/project/special-couscous/encori/data/hsa.GRCh38.gff3"
-targetscan_db = "/home/angri/Desktop/project/special-couscous/encori/data/TargetScan_v7.2_miR_Family_info.txt"
-fasta = "/home/angri/Desktop/project/special-couscous/encori/data/GRCh38.primary_assembly.genome.fa"
-cons_test = (
-    "/home/angri/Desktop/project/special-couscous/encori/data/hg38.phyloP100way.bw"
-)
+"""
+DOCSTRING TODO
+"""
 
 if __name__ == "__main__":
-    ## prepared db
-    print("prepare_db")
-    encori_df, anno_df, mask_df = prepare_db.prepare_db(
-        ANNOTATION, BIOTYPE, REPEAT_MASK, ENCORI_PATH
+
+    OPTIONS = output.load_config(infile)
+
+    # load DBs
+    anno_df, mask_df = prepare_db.load_db(
+        OPTIONS["ENCORI_ANNOTATION"],
+        OPTIONS["ENCORI_BIOTYPE"],
+        OPTIONS["ENCORI_REPEAT_MASK"],
+    )
+    # mirna load
+    print("prepared_mirna_db")
+    mirna_cons_seq_df = mirna_db.wrapper(
+        OPTIONS["MIRNA_TARGETSCAN_DB"],
+        OPTIONS["MIRNA_DB"],
+        OPTIONS["MIRNA_REF_FASTA"],
+        OPTIONS["MIRNA_CONS_TRACK"],
+        OPTIONS["TARGETSCAN_SPECIES"],
+        OPTIONS["MIRNA_WINDOW"],
     )
 
-    ## filter encori db
-    print("filtering encori")
-    encori_filtered_df = filter_df.filter_encori(encori_df, anno_df, mask_df)
+    # ENCORI load and cleanup
+    if OPTIONS["ENCORI_PATH"]:
+        print("load and cleanup ENCORI DB")
+        binding_df = encori_preprocess.load_encori(
+            OPTIONS["ENCORI_PATH"], anno_df, mask_df, OPTIONS["BINDING_WINDOWS"]
+        )
 
-    ## sanify encori db
-    print("sanify encori")
-    encori_sanified = clean_encori.sanify(encori_filtered_df, interval_size=200)
+    elif OPTIONS["BINDING_BED"]:
+        print("load external file (not ENCORI)")
+        binding_df = load_binding.as_bed(
+            OPTIONS["NEGATIVE"], label=OPTIONS["BINDING_BED_LABEL"], anno_df, mask_df, OPTIONS["BINDING_WINDOWS"]
+        )
+    elif OPTIONS["NEGATIVE_SAMPLES"]:
+        # Generate Negatives
+        binding_df = load_bindings.get_negatives(
+            OPTIONS["NEGATIVE_SAMPLES"],
+            mirna_cons_seq_df,
+            anno_df,
+            mask_df,
+            OPTIONS["BINDING_WINDOWS"],
+        )
+
+    else:
+        print("unknown operation")
+        sys.exit()
 
     ## extract sequences (cons and nt)
     print("get sequences and conservations")
-    encori_cons_seq_bs = extract_sequences.extractor(
-        encori_sanified, CONS_TRACK, REF_FASTA
+    binding_cons_seq_df = extract_sequences.extractor(
+        binding_df, OPTIONS["ENCORI_CONS_TRACK"], OPTIONS["ENCORI_REF_FASTA"]
     )
-    encori_cons_seq_bs.to_csv("final.tsv", sep="\t", index=False)
-    ## mirna processing
-    print("prepared_mirna_db")
-    mirna_db = mirna_db.wrapper(
-        targetscan_db, mirbase_db, fasta, cons_test, species=9606
+    ## print output
+    print("writing output table")
+    output.generate_table(
+        binding_cons_seq_df, mirna_cons_seq_df, OPTIONS["OUTPUT_TABLE_PATH"]
     )
-    # merge tables
-    completed_table = encori_cons_seq_bs.merge(mirna_db, on="miRNAid")
-    completed_table.to_csv("final_encori_with_info.tsv", sep="\t")

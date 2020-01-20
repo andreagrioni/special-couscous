@@ -10,7 +10,7 @@ def load_targetscan(infile, species):
     return targetscan[targetscan["Species ID"] == species]
 
 
-def format_mirbase_db(infile):
+def format_mirbase_db(infile, win_size):
     """
     function formats GFF3 file to 
     bed (name as mirna ID).
@@ -29,14 +29,24 @@ def format_mirbase_db(infile):
     def to_bed(chrom, start, end, strand, mirna_id):
         return ("\t").join(map(str, [chrom, start, end, mirna_id, ".", strand])) + "\n"
 
-    def resize_mirna(start, end, strand):
+    def resize_mirna(start, end, strand, win):
+        """
+        function extends miRNA from 5 prime to
+        win size.
+
+        parameters:
+        start=int.
+        end=int.
+        strand=coding strand
+        win=extend of N bases from 5 prime (int)
+        """
         if strand == "+":
             new_start = int(start) - 1
-            new_end = new_start + 20
+            new_end = new_start + win
             return new_start, new_end
         elif strand == "-":
             new_end = int(end) + 1
-            new_start = new_end - 21
+            new_start = new_end - (win + 1)
             return new_start, end
 
     with open(infile) as fi:
@@ -68,7 +78,7 @@ def format_mirbase_db(infile):
     return intervals_df
 
 
-def wrapper(targetscan_path, mirbase_path, reference, cons_track, species=9606):
+def wrapper(targetscan_path, mirbase_path, reference, cons_track, species=9606, win_size):
     """
     function load targetscan and mirbase db, merge then together and retrive
     information of miRNA conservation and nucleotide sequence. It returns
@@ -83,7 +93,7 @@ def wrapper(targetscan_path, mirbase_path, reference, cons_track, species=9606):
     """
 
     targetscan_df = load_targetscan(targetscan_path, species=species)
-    mirbase_df = format_mirbase_db(mirbase_path)
+    mirbase_df = format_mirbase_db(mirbase_path, win_size=20)
     mirbase_seq = extractor(mirbase_df, cons_track, reference)
 
     output_df = mirbase_seq.merge(

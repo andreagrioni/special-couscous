@@ -33,18 +33,7 @@ def get_mask(file_path):
     return df_mask
 
 
-def load_encori(file_path):
-    """
-    load encori table as pandas df
-
-    paramenters:
-    file_path=path to encori file
-    """
-    df_encori = pd.read_csv(file_path, comment="#", sep="\t")
-    return df_encori
-
-
-def prepare_db(annotation, biotype, repeat_mask, encori_path):
+def load_db(annotation, biotype, repeat_mask):
     """
     wrapper of above functions, returns pandas df
     of annotation, repeat mask, and encori db
@@ -58,19 +47,14 @@ def prepare_db(annotation, biotype, repeat_mask, encori_path):
 
     df_anno = clean_annotation(annotation, biotype)
     df_mask = get_mask(repeat_mask)
-    df_encori = load_encori(encori_path)
 
-    return df_encori, df_anno, df_mask
+    return df_anno, df_mask
 
 
 if __name__ == "__main__":
     print("testing clean_annotation()")
     repeat_mask = "./data/repeat_mask_hg19.bed"
-    encori_path = "./data/toy_encori.tsv"
     anno_path, biotype = "./data/toy_gencode.gtf", ["UTR"]
-    df_anno, df_mask, df_encori = prepare_db(
-        anno_path, biotype, repeat_mask, encori_path
-    )
+    df_anno, df_mask = load_db(anno_path, biotype, repeat_mask)
     print(df_anno.head(10))
     print(df_mask.head(10))
-    print(df_encori.head(10))
