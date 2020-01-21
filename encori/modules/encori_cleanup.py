@@ -79,9 +79,7 @@ def remove_duplicates(df):
     function drops duplicates
     and return pd dataframe.
     """
-    print(df.shape)
     df_dedup = df.drop_duplicates(inplace=False)
-    print(df_dedup.shape)
     return df_dedup
 
 

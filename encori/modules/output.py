@@ -14,7 +14,9 @@ def generate_table(encori=None, mirna_db=None, col=None, output_name=None):
     col=target column to subset from join table
     output_name=path to output name 
     """
+
     join_df = encori.merge(mirna_db, on="miRNAid")
+    join_df.to_csv("whole_table.tsv", sep="\t", index=False)
     output_df = join_df[col].copy()
     output_df.to_csv(output_name, sep="\t", index=False)
     return output_name
@@ -22,7 +24,8 @@ def generate_table(encori=None, mirna_db=None, col=None, output_name=None):
 
 def load_config(infile=None):
     if infile:
-        return json.load(infile)
+        with open(infile, "r") as fo:
+            return json.load(fo)
     else:
         print("provide config joson file")
         sys.exit()

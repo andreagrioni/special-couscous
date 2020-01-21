@@ -10,7 +10,7 @@ DOCSTRING TODO
 """
 
 if __name__ == "__main__":
-
+    infile = sys.argv[1]  # TODO change to argparser
     OPTIONS = output.load_config(infile)
 
     # load DBs
@@ -33,14 +33,18 @@ if __name__ == "__main__":
     # ENCORI load and cleanup
     if OPTIONS["ENCORI_PATH"]:
         print("load and cleanup ENCORI DB")
-        binding_df = encori_preprocess.load_encori(
-            OPTIONS["ENCORI_PATH"], anno_df, mask_df, OPTIONS["BINDING_WINDOWS"]
+        binding_df = load_binding.load_encori(
+            OPTIONS["ENCORI_PATH"], anno_df, mask_df, OPTIONS["BINDING_WINDOW"]
         )
 
     elif OPTIONS["BINDING_BED"]:
         print("load external file (not ENCORI)")
         binding_df = load_binding.as_bed(
-            OPTIONS["NEGATIVE"], label=OPTIONS["BINDING_BED_LABEL"], anno_df, mask_df, OPTIONS["BINDING_WINDOWS"]
+            OPTIONS["NEGATIVE"],
+            OPTIONS["BINDING_BED_LABEL"],
+            anno_df,
+            mask_df,
+            OPTIONS["BINDING_WINDOWS"],
         )
     elif OPTIONS["NEGATIVE_SAMPLES"]:
         # Generate Negatives
@@ -51,7 +55,6 @@ if __name__ == "__main__":
             mask_df,
             OPTIONS["BINDING_WINDOWS"],
         )
-
     else:
         print("unknown operation")
         sys.exit()
@@ -64,5 +67,8 @@ if __name__ == "__main__":
     ## print output
     print("writing output table")
     output.generate_table(
-        binding_cons_seq_df, mirna_cons_seq_df, OPTIONS["OUTPUT_TABLE_PATH"]
+        binding_cons_seq_df,
+        mirna_cons_seq_df,
+        OPTIONS["OUTPUT_COLUMNS"],
+        OPTIONS["OUTPUT_TABLE_PATH"],
     )

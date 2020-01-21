@@ -65,7 +65,7 @@ def format_mirbase_db(infile, win_size):
                 column[8],
             )
             mirna_id = get_id(info)
-            start, end = resize_mirna(start, end, strand)
+            start, end = resize_mirna(start, end, strand, win_size)
             new_bed += to_bed(chrom, start, end, strand, mirna_id)
         out = io.StringIO(new_bed)
 
@@ -78,7 +78,9 @@ def format_mirbase_db(infile, win_size):
     return intervals_df
 
 
-def wrapper(targetscan_path, mirbase_path, reference, cons_track, species=9606, win_size):
+def wrapper(
+    targetscan_path, mirbase_path, reference, cons_track, species=9606, win_size=200
+):
     """
     function load targetscan and mirbase db, merge then together and retrive
     information of miRNA conservation and nucleotide sequence. It returns

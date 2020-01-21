@@ -1,9 +1,9 @@
 from modules import encori_cleanup
-from extract_sequences import gen_random_intervals
+from modules.extract_sequences import gen_random_intervals
 import pandas as pd
 
 
-def as_bed(infile, label, anno_df, mask_df, binding_win_size)):
+def as_bed(infile, label, anno_df, mask_df, binding_win_size):
     """
     function converts input BED file to pandas df,
     and returns it.
@@ -14,7 +14,7 @@ def as_bed(infile, label, anno_df, mask_df, binding_win_size)):
     col = ["chromosome", "start", "end", "miRNAid", "clipExpNum", "strand"]
     bed_input = pd.read_csv(infile, sep="\t", names=col)
     bed_df = cleanup_wrapper(input_df, anno_df, mask_df, binding_win_size)
-    bed_df['label'] = label
+    bed_df["label"] = label
     return bed_df
 
 
@@ -31,10 +31,10 @@ def cleanup_wrapper(input_df, anno_df, mask_df, binding_win_size):
     binding_win_size=size of the binding site
     """
     ## filter encori db
-    encori_filtered_df = filter_df.filter_encori(df_encori, anno_df, mask_df)
+    encori_filtered_df = encori_cleanup.filter_encori(input_df, anno_df, mask_df)
 
     ## sanify encori db
-    encori_sanified = filter_df.sanify(encori_filtered_df, binding_win_size)
+    encori_sanified = encori_cleanup.sanify(encori_filtered_df, binding_win_size)
     return encori_sanified
 
 
