@@ -10,10 +10,14 @@ DOCSTRING TODO
 """
 
 if __name__ == "__main__":
-    infile = sys.argv[1]  # TODO change to argparser
+    try:
+        infile = sys.argv[1]  # TODO change to argparser
+    except:
+        infile = "/home/angri/Desktop/project/special-couscous/encori/AG_config.json"
     OPTIONS = output.load_config(infile)
 
     # load DBs
+    print("prepared annotaton and repeat mask db")
     anno_df, mask_df = prepare_db.load_db(
         OPTIONS["ENCORI_ANNOTATION"],
         OPTIONS["ENCORI_BIOTYPE"],
@@ -34,7 +38,12 @@ if __name__ == "__main__":
     if OPTIONS["ENCORI_PATH"]:
         print("load and cleanup ENCORI DB")
         binding_df = load_binding.load_encori(
-            OPTIONS["ENCORI_PATH"], anno_df, mask_df, OPTIONS["BINDING_WINDOW"]
+            OPTIONS["ENCORI_PATH"],
+            anno_df,
+            mask_df,
+            OPTIONS["BINDING_WINDOW"],
+            OPTIONS["NEGATIVE_SAMPLES"],
+            OPTIONS["SHUFFLE_POSITIVES_TO_NEGATIVE"],
         )
 
     elif OPTIONS["BINDING_BED"]:
@@ -46,18 +55,22 @@ if __name__ == "__main__":
             mask_df,
             OPTIONS["BINDING_WINDOWS"],
         )
-    elif OPTIONS["NEGATIVE_SAMPLES"]:
-        # Generate Negatives
-        binding_df = load_bindings.get_negatives(
-            OPTIONS["NEGATIVE_SAMPLES"],
-            mirna_cons_seq_df,
-            anno_df,
-            mask_df,
-            OPTIONS["BINDING_WINDOWS"],
-        )
     else:
         print("unknown operation")
         sys.exit()
+
+    if OPTIONS["NEGATIVE_SAMPLES"]:
+        print("generate negative samples")
+        if OPTIONS["SHUFFLE_POSITIVES_TO_NEGATIVE"]:
+            binding_df = load_binding.shuffle_to_negative(binding_df)
+        else:
+            binding_df = load_bindings.get_negatives(
+                OPTIONS["NEGATIVE_SAMPLES"],
+                mirna_cons_seq_df,
+                anno_df,
+                mask_df,
+                OPTIONS["BINDING_WINDOWS"],
+            )
 
     ## extract sequences (cons and nt)
     print("get sequences and conservations")

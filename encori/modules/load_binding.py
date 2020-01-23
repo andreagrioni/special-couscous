@@ -59,7 +59,14 @@ def get_negatives(
     return cleanup_wrapper(random_df, anno_df, mask_df, binding_win_size)
 
 
-def load_encori(file_path, anno_df, mask_df, binding_win_size):
+def load_encori(
+    file_path,
+    anno_df,
+    mask_df,
+    binding_win_size,
+    negative_sample_size,
+    negative_from_shuffle_positive,
+):
     """
     function loads encori table as pandas df and 
     returned a filtered table.
@@ -68,12 +75,33 @@ def load_encori(file_path, anno_df, mask_df, binding_win_size):
     file_path=path to encori file
     anno_df=pandas df of annotation
     mask_df=pandas df of repeat mask
-    df_encori=extend to int size
+    binding_win_size=binding window size (int)
+    negative_sample_size=number of negatives (int)
+    shuffle_positive=negatives samples by random shuffling miRNA from positive dataset (bool)
     """
     # load encori
     df_encori = pd.read_csv(file_path, comment="#", sep="\t")
-    df_encori["label"] = "positive"
-    return cleanup_wrapper(df_encori, anno_df, mask_df, binding_win_size)
+    df_encori_clean = cleanup_wrapper(df_encori, anno_df, mask_df, binding_win_size)
+    df_encori_clean["label"] = "positive"
+    return df_encori_clean
+
+
+def shuffle_to_negative(df):
+    """
+    function shuffle miRNAid column of
+    input df to generate negative class
+    returns input df with negative samples
+
+    paramenters:
+    df=positive df
+    """
+
+    print("shuffle miRNA of input table to create negative class")
+    df_negative = df.copy()
+    df_negative["miRNAid"] = df_negative["miRNAid"].sample(frac=1).reset_index()
+    df_negative["label"] = "negative"
+    update_df = pd.concat([df, df_negative], axis=0, ignore_index=True)
+    return update_df
 
 
 if __name__ == "__main__":

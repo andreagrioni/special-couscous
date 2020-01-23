@@ -1,6 +1,8 @@
 from pybedtools import BedTool
 import pandas as pd
 import random
+import tempfile
+import os
 
 
 def make_bed(df, columns="all", outname="filtered_bed"):
@@ -51,25 +53,35 @@ def filter_encori(encori_df, anno_df, mask_df):
     anno_df=annotation df
     mask_df=repeat mask df
     """
+    tmp_dirname = "bedtools_filtering"
 
-    encori_names = "chromosome,broadStart,broadEnd,miRNAid,clipExpNum,strand".split(",")
-    anno_names = "chrom,start,end,biotype,score,strand".split(",")
+    with tempfile.TemporaryDirectory() as tmp_dirname:
+        encori_names = "chromosome,broadStart,broadEnd,miRNAid,clipExpNum,strand".split(
+            ","
+        )
+        anno_names = "chrom,start,end,biotype,score,strand".split(",")
 
-    encori_bed = make_bed(encori_df, encori_names, "encori.bed")
-    mask_bed = make_bed(mask_df, columns="all", outname="repeat.bed")
-    anno_bed = make_bed(anno_df, columns=anno_names, outname="anno.bed")
+        encori_bed = make_bed(encori_df, encori_names, "%s/encori.bed" % (tmp_dirname))
+        mask_bed = make_bed(
+            mask_df, columns="all", outname="%s/repeat.bed" % (tmp_dirname)
+        )
+        anno_bed = make_bed(
+            anno_df, columns=anno_names, outname="%s/anno.bed" % (tmp_dirname)
+        )
 
-    encori_no_repeat = intersect_bed(encori_bed, mask_bed, u=False, v=True)
+        encori_no_repeat = intersect_bed(encori_bed, mask_bed, u=False, v=True)
 
-    encori_no_repeat_only_utr = intersect_bed(
-        encori_no_repeat, anno_bed, u=False, v=False
-    )
+        encori_no_repeat_only_utr = intersect_bed(
+            encori_no_repeat, anno_bed, u=False, v=False
+        )
 
     encori_filtered = pd.read_csv(
         encori_no_repeat_only_utr, sep="\t", header=None, names=encori_names
     )
 
-    encori_filtered.to_csv("encori_filtered.bed", sep="\t", header=False, index=False)
+    # encori_filtered.to_csv(
+    #     "encori_filtered.bed", sep="\t", header=False, index=False
+    # )
 
     return encori_filtered
 

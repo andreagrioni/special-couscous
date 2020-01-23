@@ -105,7 +105,6 @@ def wrapper(
     names = ["miRNAid", "binding_cons_score", "binding_sequence"]
     to_return = output_df[names].copy()
     to_return.columns = ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"]
-    to_return.to_csv("mirbase_tarbase_with_seq_cons.tsv", sep="\t", index=False)
     return to_return
 
 
