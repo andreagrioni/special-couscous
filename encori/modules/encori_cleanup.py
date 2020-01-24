@@ -53,14 +53,14 @@ def filter_encori(encori_df, anno_df, mask_df):
     anno_df=annotation df
     mask_df=repeat mask df
     """
-    tmp_dirname = "bedtools_filtering"
 
     with tempfile.TemporaryDirectory() as tmp_dirname:
         encori_names = "chromosome,broadStart,broadEnd,miRNAid,clipExpNum,strand".split(
             ","
         )
         anno_names = "chrom,start,end,biotype,score,strand".split(",")
-
+        encori_df.broadStart = encori_df.broadStart.astype(int)
+        encori_df.broadEnd = encori_df.broadEnd.astype(int)
         encori_bed = make_bed(encori_df, encori_names, "%s/encori.bed" % (tmp_dirname))
         mask_bed = make_bed(
             mask_df, columns="all", outname="%s/repeat.bed" % (tmp_dirname)
