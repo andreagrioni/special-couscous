@@ -16,7 +16,7 @@ def generate_table(encori=None, mirna_db=None, col=None, output_name=None):
     """
 
     join_df = encori.merge(mirna_db, how="left", on="miRNAid")
-    output_df = join_df[col].copy()
+    output_df = join_df[col].dropna().copy()
     output_df.to_csv(output_name, sep="\t", index=False)
     return output_name
 

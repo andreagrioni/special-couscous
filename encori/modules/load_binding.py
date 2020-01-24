@@ -98,7 +98,9 @@ def shuffle_to_negative(df):
 
     print("shuffle miRNA of input table to create negative class")
     df_negative = df.copy()
-    df_negative["miRNAid"] = df_negative["miRNAid"].sample(frac=1).reset_index()
+    df_negative["miRNAid"] = (
+        df_negative["miRNAid"].sample(frac=1).reset_index(drop=True)
+    )
     df_negative["label"] = "negative"
     update_df = pd.concat([df, df_negative], axis=0, ignore_index=True)
     return update_df
