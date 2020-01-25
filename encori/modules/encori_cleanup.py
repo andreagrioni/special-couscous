@@ -120,7 +120,7 @@ def extend_bs(df, size):
     def random_resize(row, size):
         centroid = row.centroid
         start = centroid - random.randint(1, size)
-        end = start + 200
+        end = start + size
         return pd.Series([start, end], index=["start", "end"])
 
     df_intervals = df.apply(random_resize, axis=1, size=size)
