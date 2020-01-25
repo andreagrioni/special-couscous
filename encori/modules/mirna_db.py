@@ -94,16 +94,17 @@ def wrapper(
     cons_track=path to conservation track
     """
 
-    targetscan_df = load_targetscan(targetscan_path, species=species)
+    #targetscan_df = load_targetscan(targetscan_path, species=species)
     mirbase_df = format_mirbase_db(mirbase_path, win_size=20)
     mirbase_seq = extractor(mirbase_df, cons_track, reference)
 
-    output_df = mirbase_seq.merge(
-        targetscan_df, left_on="miRNAid", right_on="MiRBase Accession", how="left"
-    ).dropna()
+    # output_df = mirbase_seq.merge(
+    #     targetscan_df, left_on="miRNAid", right_on="MiRBase Accession", how="left"
+    # ).dropna()
 
     names = ["miRNAid", "binding_cons_score", "binding_sequence"]
-    to_return = output_df[names].copy()
+    #to_return = output_df[names].copy()
+    to_return = mirbase_seq[names].copy()
     to_return.columns = ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"]
     return to_return
 
