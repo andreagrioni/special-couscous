@@ -86,7 +86,7 @@ def load_encori(
     return df_encori_clean
 
 
-def shuffle_to_negative(df):
+def shuffle_to_negative(df, mirna_cons_seq_df):
     """
     function shuffle miRNAid column of
     input df to generate negative class
@@ -96,14 +96,34 @@ def shuffle_to_negative(df):
     df=positive df
     """
 
+    def randomize(row, mirna_cons_seq_df):
+        real_mirna = row.miRNAid
+        random_mirna = row.miRNAid
+        while real_mirna == random_mirna:
+            random_row = mirna_cons_seq_df.sample(n=1)
+            random_mirna = random_row.miRNAid.iloc[0]
+            random_seq = random_row.mirna_binding_sequence.iloc[0]
+            random_cons = random_row.mirna_cons_score.iloc[0]
+        return pd.Series(
+            data=[random_mirna, random_cons, random_seq],
+            index=["miRNAid", "mirna_cons_score", "mirna_binding_sequence"],
+        )
+
     print("shuffle miRNA of input table to create negative class")
-    df_negative = df.copy()
-    df_negative["miRNAid"] = (
-        df_negative["miRNAid"].sample(frac=1).reset_index(drop=True)
+    df_negative = df.copy().drop(
+        ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"], axis=1
     )
-    df_negative["label"] = "negative"
-    update_df = pd.concat([df, df_negative], axis=0, ignore_index=True)
-    return update_df
+
+    df_random = df.apply(randomize, mirna_cons_seq_df=mirna_cons_seq_df, axis=1)
+
+    df_tmp = df_negative.join(df_random)
+    df_tmp["label"] = "negative"
+
+    df_final = pd.concat(
+        [df, df_tmp], axis=0, ignore_index=False, sort=False
+    ).reset_index(drop=True)
+
+    return df_final
 
 
 if __name__ == "__main__":

@@ -2,6 +2,19 @@ import pandas as pd
 import os
 
 
+def combine_df(main_df, supp_df, how="inner"):
+    """
+    function combines encori and mirna df.
+    return overlapping df.
+
+    paramenters:
+    main_df=encori df
+    supp_df=mirna df
+    how=method (def. inner)
+    """
+    return main_df.merge(supp_df, how=how, on="miRNAid")
+
+
 def clean_annotation(annotation_path, biotype):
     """
     filter annotation for specific 
