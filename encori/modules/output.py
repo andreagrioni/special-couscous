@@ -28,10 +28,14 @@ def generate_table(combined_df, col=None, output_name=None):
     return output_name
 
 
-def load_config(infile=None):
-    if infile:
-        with open(infile, "r") as fo:
-            return json.load(fo)
+def load_config(config_file=None, target_name=None, output_name=None):
+    if config_file:
+        with open(config_file, "r") as fo:
+            OPTIONS = json.load(fo)
     else:
         print("provide config joson file")
         sys.exit()
+    OPTIONS["ENCORI_PATH"] = target_name  # path to input table
+    if output_name:
+        OPTIONS["OUTPUT_TABLE_PATH"] = sys.argv[3]
+    return OPTIONS

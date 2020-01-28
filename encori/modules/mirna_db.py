@@ -79,7 +79,12 @@ def format_mirbase_db(infile, win_size):
 
 
 def wrapper(
-    targetscan_path, mirbase_path, reference, cons_track, species=9606, win_size=200
+    # targetscan_path,
+    mirbase_path,
+    reference,
+    cons_track,
+    species=9606,
+    win_size=200,
 ):
     """
     function load targetscan and mirbase db, merge then together and retrive
@@ -94,7 +99,7 @@ def wrapper(
     cons_track=path to conservation track
     """
 
-    #targetscan_df = load_targetscan(targetscan_path, species=species)
+    # targetscan_df = load_targetscan(targetscan_path, species=species)
     mirbase_df = format_mirbase_db(mirbase_path, win_size=20)
     mirbase_seq = extractor(mirbase_df, cons_track, reference)
 
@@ -103,7 +108,7 @@ def wrapper(
     # ).dropna()
 
     names = ["miRNAid", "binding_cons_score", "binding_sequence"]
-    #to_return = output_df[names].copy()
+    # to_return = output_df[names].copy()
     to_return = mirbase_seq[names].copy()
     to_return.columns = ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"]
     return to_return

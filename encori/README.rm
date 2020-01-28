@@ -3,7 +3,7 @@ tools
 conda install pybigwig -c bioconda
 conda install --channel conda-forge --channel bioconda pybedtools
 conda install --channel conda-forge --channel bioconda bedtools htslib
-
+conda install -c anaconda jupyter
 
 # database information:
 ENCORI DB URL: http://starbase.sysu.edu.cn/agoClipRNA.php?source=mRNA

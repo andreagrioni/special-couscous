@@ -10,11 +10,14 @@ DOCSTRING TODO
 """
 
 if __name__ == "__main__":
+    config_file = sys.argv[1]  # TODO change to argparser
+    target_file = sys.argv[2]
+
     try:
-        infile = sys.argv[1]  # TODO change to argparser
+        output_name = sys.argv[3]
+        OPTIONS = output.load_config(config_file, target_file, output_name)
     except:
-        infile = "/home/angri/Desktop/project/special-couscous/encori/AG_config.json"
-    OPTIONS = output.load_config(infile)
+        OPTIONS = output.load_config(config_file, target_file)
 
     # load DBs
     print("prepared annotaton and repeat mask db")
@@ -26,7 +29,7 @@ if __name__ == "__main__":
     # mirna load
     print("prepared_mirna_db")
     mirna_cons_seq_df = mirna_db.wrapper(
-        OPTIONS["MIRNA_TARGETSCAN_DB"],
+        # OPTIONS["MIRNA_TARGETSCAN_DB"],
         OPTIONS["MIRNA_DB"],
         OPTIONS["MIRNA_REF_FASTA"],
         OPTIONS["MIRNA_CONS_TRACK"],
