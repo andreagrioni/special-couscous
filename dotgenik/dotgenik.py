@@ -124,7 +124,7 @@ def make_image_batch(args):
     args=parser object with arguments
     """
     connections_df = pd.read_csv(
-        args.table, sep="\t", names=["x_seq", "y_seq", "labe"], header=0
+        args.table, sep="\t", names=["x_seq", "y_seq", "label"], header=0
     )
     if args.samples:
         connections_df = connections_df.sample(n=args.samples, random_state=1989)
