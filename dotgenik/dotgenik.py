@@ -82,6 +82,7 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels):
     alphabet=2D matrix
     file_name=image file name
     out_dir=target directory
+    labels=labels ticks as nt sequences (boolean)
     """
     # Create binding site - mirna interaction metrics
     df = make_set_hm(x_seq, y_seq, alphabet)
