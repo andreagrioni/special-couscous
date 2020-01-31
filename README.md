@@ -17,7 +17,8 @@ repository of miscellaneous tools
             dotgenik.py --table input_tsv --name image_name --out output_directory
          
          Standard image created with seaborn;
-         otherwise matplot (--matplot) or faster with PIL (--pil)
+         otherwise matplot (--matplot) or faster with PIL (--pil);
+         save images as array (--np)
 
         *(input_tsv table as column: x_nt_seq, y_nt_seq, labels)
 

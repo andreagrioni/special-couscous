@@ -49,7 +49,7 @@ def watson_crick(x_nt, y_nt, alphabet=None):
     return alphabet.get(pair, 0)
 
 
-def make_set_hm(x_seq, y_seq, alphabet, matplot, pil):
+def make_set_hm(x_seq, y_seq, alphabet):
     """
     fun creates a metrics of nt bindings
     according to watson crick rules.
@@ -71,13 +71,12 @@ def make_set_hm(x_seq, y_seq, alphabet, matplot, pil):
             matrix[i_bind, i_micro] = watson_crick(
                 x_seq[i_bind], y_seq[i_micro], alphabet=alphabet
             )
-    if matplot or pil:
-        return matrix
-    else:
-        return pd.DataFrame(matrix, columns=list(y_seq), index=list(x_seq))
+    return matrix
 
 
-def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels, matplot, pil):
+def make_2d(
+    x_seq, y_seq, alphabet, file_name, out_dir, labels, matplot, pil, array_flag
+):
     """
     fun plots 2D metrics of watson-crick binding
     rules of sequence x and y as heatmap
@@ -90,26 +89,30 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels, matplot, pil):
     out_dir=target directory
     labels=labels ticks as nt sequences (boolean)
     matplot=generate matplot images (boolean)
+    pil=generate pil image (boolean)
+    array_flag=return np array (boolean)
     """
     # set output dir
     if out_dir:
         file_name = os.path.join(out_dir, file_name)
 
     # Create binding site - mirna interaction metrics
-    df = make_set_hm(x_seq, y_seq, alphabet, matplot, pil)
+    array = make_set_hm(x_seq, y_seq, alphabet)
     # Default heatmap: just a visualization of this square matrix
 
-    A = len(x_seq)
-    B = len(y_seq)
-
     if matplot:
-        plt.imshow(df)
+        plt.imshow(array)
         plt.savefig(file_name)
     elif pil:
-        img = Image.fromarray(np.uint8(cm.gist_earth(df) * 255))
-        #        img = Image.fromarray(df, mode="RGB")
+        img = Image.fromarray(np.uint8(cm.gist_earth(array) * 255))
         img.save(f"{file_name}.png")
+    elif array_flag:
+        return array
     else:
+        A = len(x_seq)
+        B = len(y_seq)
+        df = pd.DataFrame(array, index=list(x_seq), columns=list(y_seq))
+
         FIG, AX = plt.subplots(figsize=(B, A))
         AX = sns.heatmap(
             df,
@@ -121,17 +124,17 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels, matplot, pil):
             # vmin=0,
             # vmax=1,
         )
-
         FIG.savefig(f"{file_name}.png")
         plt.cla()
         plt.close(FIG)
-    return None
+    return array
 
 
-def make_2d_caller(row, alphabet, file_name, out_dir, labels, matplot, pil):
+def make_2d_caller(row, alphabet, file_name, out_dir, labels, matplot, pil, array):
     fig_id = f"{row.name}_{file_name}"
-    make_2d(row.x_seq, row.y_seq, alphabet, fig_id, out_dir, labels, matplot, pil)
-    return fig_id
+    return make_2d(
+        row.x_seq, row.y_seq, alphabet, fig_id, out_dir, labels, matplot, pil, array
+    )
 
 
 def make_image_batch(args):
@@ -147,17 +150,35 @@ def make_image_batch(args):
     )
     if args.samples:
         connections_df = connections_df.sample(n=args.samples, random_state=1989)
-    connections_df["fig_id"] = connections_df.apply(
-        make_2d_caller,
-        alphabet=args.alphabet,
-        file_name=args.file_name,
-        out_dir=args.out_dir,
-        labels=args.labels,
-        matplot=args.matplot,
-        pil=args.pil,
-        axis=1,
-    )
-    return None
+
+    if not args.array:
+        connections_df.apply(
+            make_2d_caller,
+            alphabet=args.alphabet,
+            file_name=args.file_name,
+            out_dir=args.out_dir,
+            labels=args.labels,
+            matplot=args.matplot,
+            pil=args.pil,
+            array=args.array,
+            axis=1,
+        )
+    else:
+        storage_list = list()
+        output = os.path.join(args.out_dir, args.file_name)
+        for index, row in connections_df.iterrows():
+            array = make_2d_caller(
+                row=row,
+                alphabet=args.alphabet,
+                file_name=args.file_name,
+                out_dir=args.out_dir,
+                labels=args.labels,
+                matplot=args.matplot,
+                pil=args.pil,
+                array=args.array,
+            )
+            storage_list.append(array)
+        np.savez(output, *storage_list)
 
 
 def pre_process(ARGS):
@@ -223,6 +244,12 @@ def get_arguments():
     ),
     parser.add_argument(
         "--pil", dest="pil", help="pil image (boolean)", action="store_true",
+    ),
+    parser.add_argument(
+        "--np",
+        dest="array",
+        help="output array of matrixes (boolean)",
+        action="store_true",
     )
 
     args = parser.parse_args()
@@ -232,13 +259,11 @@ def get_arguments():
 
 if __name__ == "__main__":
     ARGS = get_arguments()
+    start = time.time()
     make_image_batch(ARGS)
     try:
         if ARGS.table:
-            start = time.time()
             make_image_batch(ARGS)
-            end = time.time()
-            print("elapsed time:", end - start, sep="\t")
         else:
             make_2d(
                 ARGS.x_seq,
@@ -249,8 +274,10 @@ if __name__ == "__main__":
                 ARGS.labels,
                 ARGS.matplot,
                 ARGS.pil,
+                ARGS.array,
             )
     except:
         print("no arguments\nrun dotgenik.py --help")
         sys.exit()
-
+    end = time.time()
+    print("elapsed time:", end - start, sep="\t")
