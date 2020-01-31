@@ -22,6 +22,7 @@ options:
 
 import argparse
 import os
+import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -202,15 +203,19 @@ def get_arguments():
 
 if __name__ == "__main__":
     ARGS = get_arguments()
-    if ARGS.table:
-        make_image_batch(ARGS)
-    else:
-        make_2d(
-            ARGS.x_seq,
-            ARGS.y_seq,
-            ARGS.alphabet,
-            ARGS.file_name,
-            ARGS.out_dir,
-            ARGS.labels,
-        )
+    try:
+        if ARGS.table:
+            make_image_batch(ARGS)
+        else:
+            make_2d(
+                ARGS.x_seq,
+                ARGS.y_seq,
+                ARGS.alphabet,
+                ARGS.file_name,
+                ARGS.out_dir,
+                ARGS.labels,
+            )
+    except:
+        print("no arguments\nrun dotgenik.py --help")
+        sys.exit()
 
