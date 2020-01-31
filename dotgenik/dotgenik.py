@@ -26,7 +26,10 @@ import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import seaborn as sns
+import time
+from PIL import Image
 
 
 def watson_crick(x_nt, y_nt, alphabet=None):
@@ -41,12 +44,12 @@ def watson_crick(x_nt, y_nt, alphabet=None):
     alphabet = dict of nt_pair:score
     """
     if not alphabet:
-        alphabet = {"AT": 1, "TA": 1, "GC": 1, "CG": 1}
+        alphabet = {"AT": 1.0, "TA": 1.0, "GC": 1.0, "CG": 1.0}
     pair = x_nt + y_nt
     return alphabet.get(pair, 0)
 
 
-def make_set_hm(x_seq, y_seq, alphabet):
+def make_set_hm(x_seq, y_seq, alphabet, matplot, pil):
     """
     fun creates a metrics of nt bindings
     according to watson crick rules.
@@ -61,18 +64,20 @@ def make_set_hm(x_seq, y_seq, alphabet):
     len_x = len(x_seq)
     len_y = len(y_seq)
 
-    metrics = np.zeros((len_x, len_y))
+    matrix = np.zeros((len_x, len_y))
 
     for i_bind in range(0, len_x):
         for i_micro in range(0, len_y):
-            metrics[i_bind, i_micro] = watson_crick(
+            matrix[i_bind, i_micro] = watson_crick(
                 x_seq[i_bind], y_seq[i_micro], alphabet=alphabet
             )
-    m_out = pd.DataFrame(metrics, columns=list(y_seq), index=list(x_seq))
-    return m_out
+    if matplot or pil:
+        return matrix
+    else:
+        return pd.DataFrame(matrix, columns=list(y_seq), index=list(x_seq))
 
 
-def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels):
+def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels, matplot, pil):
     """
     fun plots 2D metrics of watson-crick binding
     rules of sequence x and y as heatmap
@@ -84,36 +89,48 @@ def make_2d(x_seq, y_seq, alphabet, file_name, out_dir, labels):
     file_name=image file name
     out_dir=target directory
     labels=labels ticks as nt sequences (boolean)
+    matplot=generate matplot images (boolean)
     """
+    # set output dir
+    if out_dir:
+        file_name = os.path.join(out_dir, file_name)
+
     # Create binding site - mirna interaction metrics
-    df = make_set_hm(x_seq, y_seq, alphabet)
+    df = make_set_hm(x_seq, y_seq, alphabet, matplot, pil)
     # Default heatmap: just a visualization of this square matrix
 
     A = len(x_seq)
     B = len(y_seq)
 
-    FIG, AX = plt.subplots(figsize=(B, A))
-    AX = sns.heatmap(
-        df,
-        xticklabels=labels,
-        yticklabels=labels,
-        annot=False,
-        cbar=False,
-        cmap="Blues",
-        # vmin=0,
-        # vmax=1,
-    )
-    if out_dir:
-        file_name = os.path.join(out_dir, file_name)
-    FIG.savefig(f"{file_name}.png")
-    plt.cla()
-    plt.close(FIG)
+    if matplot:
+        plt.imshow(df)
+        plt.savefig(file_name)
+    elif pil:
+        img = Image.fromarray(np.uint8(cm.gist_earth(df) * 255))
+        #        img = Image.fromarray(df, mode="RGB")
+        img.save(f"{file_name}.png")
+    else:
+        FIG, AX = plt.subplots(figsize=(B, A))
+        AX = sns.heatmap(
+            df,
+            xticklabels=labels,
+            yticklabels=labels,
+            annot=False,
+            cbar=False,
+            cmap="Blues",
+            # vmin=0,
+            # vmax=1,
+        )
+
+        FIG.savefig(f"{file_name}.png")
+        plt.cla()
+        plt.close(FIG)
     return None
 
 
-def make_2d_caller(row, alphabet, file_name, out_dir, labels):
+def make_2d_caller(row, alphabet, file_name, out_dir, labels, matplot, pil):
     fig_id = f"{row.name}_{file_name}"
-    make_2d(row.x_seq, row.y_seq, alphabet, fig_id, out_dir, labels)
+    make_2d(row.x_seq, row.y_seq, alphabet, fig_id, out_dir, labels, matplot, pil)
     return fig_id
 
 
@@ -136,6 +153,8 @@ def make_image_batch(args):
         file_name=args.file_name,
         out_dir=args.out_dir,
         labels=args.labels,
+        matplot=args.matplot,
+        pil=args.pil,
         axis=1,
     )
     return None
@@ -195,7 +214,17 @@ def get_arguments():
         dest="labels",
         help="labels ticks as nt sequences (boolean)",
         action="store_true",
+    ),
+    parser.add_argument(
+        "--matplot",
+        dest="matplot",
+        help="matplot image (boolean)",
+        action="store_true",
+    ),
+    parser.add_argument(
+        "--pil", dest="pil", help="pil image (boolean)", action="store_true",
     )
+
     args = parser.parse_args()
     args = pre_process(args)
     return args
@@ -203,9 +232,13 @@ def get_arguments():
 
 if __name__ == "__main__":
     ARGS = get_arguments()
+    make_image_batch(ARGS)
     try:
         if ARGS.table:
+            start = time.time()
             make_image_batch(ARGS)
+            end = time.time()
+            print("elapsed time:", end - start, sep="\t")
         else:
             make_2d(
                 ARGS.x_seq,
@@ -214,6 +247,8 @@ if __name__ == "__main__":
                 ARGS.file_name,
                 ARGS.out_dir,
                 ARGS.labels,
+                ARGS.matplot,
+                ARGS.pil,
             )
     except:
         print("no arguments\nrun dotgenik.py --help")

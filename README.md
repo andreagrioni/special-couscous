@@ -9,11 +9,15 @@ repository of miscellaneous tools
             pandas
             seaborn
             matplotlib
-            
+            Pillow
+
         Feed sequences from CL:
             dotgenik.py --x nt_sequence --y nt_sequence --name image_name --out output_directory 
-        Feed sequences through table:
+        Feed sequences from table:
             dotgenik.py --table input_tsv --name image_name --out output_directory
+         
+         Standard image created with seaborn;
+         otherwise matplot (--matplot) or faster with PIL (--pil)
 
         *(input_tsv table as column: x_nt_seq, y_nt_seq, labels)
 
@@ -25,7 +29,7 @@ repository of miscellaneous tools
 
             bedtools
             samtools
-            Python3.6 or greater;
+            Python3.6+;
 
          Input paramenters:
 
