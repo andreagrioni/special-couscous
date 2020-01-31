@@ -14,3 +14,10 @@ sudo apt-get install gcsfuse
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
 bash Miniconda3-latest-Linux-x86_64.sh
+
+## install git
+
+sudo apt install git
+
+git config --global user.email "grioni.andrea@gmail.com"
+git config --global user.name "andreagrioni"
