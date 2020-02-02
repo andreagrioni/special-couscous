@@ -145,9 +145,17 @@ def make_image_batch(args):
     paramenters:
     args=parser object with arguments
     """
-    connections_df = pd.read_csv(
-        args.table, sep="\t", names=["x_seq", "y_seq", "label"], header=0
-    )
+    if ARGS.feature == "all":
+        connections_df = pd.read_csv(
+            args.table, sep="\t", names=["x_seq", "y_seq", "label"], header=0
+        )
+    else:
+        features = ARGS.feature
+        df_all = pd.read_csv(
+            args.table, sep="\t"
+        )
+        connections_df = df_all[features].copy()
+        connections_df.columns = ["x_seq", "y_seq", "label"]
     if args.samples:
         connections_df = connections_df.sample(n=args.samples, random_state=1989)
 
@@ -187,6 +195,8 @@ def pre_process(ARGS):
             os.makedirs(ARGS.out_dir, exist_ok=True)
     if ARGS.alphabet:
         ARGS.alphabet = eval(ARGS.alphabet)
+    if ARGS.feature:
+        ARGS.feature = list(ARGS.feature.split(" "))
     return ARGS
 
 
@@ -250,7 +260,14 @@ def get_arguments():
         dest="array",
         help="output array of matrixes (boolean)",
         action="store_true",
-    )
+    ),
+    parser.add_argument(
+        "--feature",
+        dest="feature",
+        type=str,
+        help="load only feature columns separeted by single space",
+        default="all"
+        )
 
     args = parser.parse_args()
     args = pre_process(args)
@@ -260,7 +277,6 @@ def get_arguments():
 if __name__ == "__main__":
     ARGS = get_arguments()
     start = time.time()
-    make_image_batch(ARGS)
     try:
         if ARGS.table:
             make_image_batch(ARGS)
@@ -275,8 +291,9 @@ if __name__ == "__main__":
                 ARGS.matplot,
                 ARGS.pil,
                 ARGS.array,
+                ARGS.feature
             )
-    except:
+    except ValueError:
         print("no arguments\nrun dotgenik.py --help")
         sys.exit()
     end = time.time()
