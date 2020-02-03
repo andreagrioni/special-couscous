@@ -6,8 +6,8 @@ from modules import make_random
 
 def parse_args(parser):
     """
-    get script arguments and return
-    object with arguments as attributes.
+    get script OPT and return
+    object with OPT as attributes.
     
     paramenters:
     parser = ArgumentParser object
@@ -18,21 +18,21 @@ def parse_args(parser):
         type=str,
         dest="reference",
         help="path to reference genome",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--N",
         type=int,
         dest="N",
         help="generate N number of samples (int)",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--int_size",
         type=int,
         dest="int_size",
         help="length of output sequences (int)",
-        required=True,
+        required=False,
     ),
     parser.add_argument(
         "--avoid_int",
@@ -96,6 +96,26 @@ def parse_args(parser):
         required=False,
         default="-v",
         nargs="+",
+    ),
+    parser.add_argument(
+        "--extend",
+        dest="extend",
+        help="extend bed intervals [+;-;all]",
+        action="store_true",
+    ),
+    parser.add_argument(
+        "--extend_win",
+        type=int,
+        dest="extend_win",
+        help="extend window size",
+        required=False,
+    ),
+    parser.add_argument(
+        "--extend_times",
+        type=int,
+        dest="extend_times",
+        help="how many times extend interval",
+        required=False,
     )
 
     args = parser.parse_args()
@@ -113,21 +133,24 @@ if __name__ == "__main__":
         description="create 'N' random sequences of length 'int_size' from reference genome"
     )
 
-    ARGUMENTS = parse_args(PARSER)
+    OPT = parse_args(PARSER)
 
-    RANDOM_BED = make_random.make_set(ARGUMENTS)
+    if not OPT.extend:
+        RANDOM_BED = make_random.make_set(OPT)
+    else:
+        RANDOM_BED = False
 
-    if ARGUMENTS.fasta_flag and RANDOM_BED:
+    if OPT.fasta_flag and RANDOM_BED:
         print(f"extract sequences from BED file {RANDOM_BED}")
         bedtools.get_fasta(
-            ARGUMENTS.reference,
-            RANDOM_BED,
-            ARGUMENTS.output_name,
-            opt=ARGUMENTS.getfasta_opt,
+            OPT.reference, RANDOM_BED, OPT.output_name, opt=OPT.getfasta_opt,
         )
 
-    elif not ARGUMENTS.fasta_flag and RANDOM_BED:
+    elif not OPT.fasta_flag and RANDOM_BED:
         print(f"random intervals stored at {RANDOM_BED}")
-
+    elif OPT.extend:
+        intervals.extend_intervals(
+            OPT.input_bed, OPT.extend_win, OPT.extend_times, OPT.output_name
+        )
     else:
         print("nothing to do")

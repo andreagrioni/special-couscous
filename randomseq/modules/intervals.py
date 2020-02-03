@@ -2,6 +2,7 @@ import pandas as pd
 import copy
 import os
 import random
+from collections import deque
 
 
 def load_db(file_name, feature="all"):
@@ -56,8 +57,42 @@ def gtf_to_bed(file_name, feature, int_size, N, bed_name="interval_gtf.bed"):
     return bed_name
 
 
+def extend(line, win_size, times, direction="all"):
+
+    chrom, start_0, end_0, name, score, strand = line.strip().split("\t")
+    intervals_start = deque(str(), times)
+    intervals_end = deque(str(), times)
+
+    for i in range(0, times):
+        start_new = int(start_0) - win_size
+        end_new = int(end_0) + win_size
+
+        intervals_start.appendleft(
+            f"{chrom}\t{start_new}\t{start_0}\t{name}:extended:-{i}\t{score}\t{strand}\n"
+        )
+        intervals_end.appendleft(
+            f"{chrom}\t{end_0}\t{end_new}\t{name}:extended:+{i}\t{score}\t{strand}\n"
+        )
+        start_0 = start_new
+        end_0 = end_new
+    return ("").join(intervals_start), ("").join(intervals_end)
+
+
+def extend_intervals(bed_file, win_size, times, output):
+    string_out = str()
+    with open(bed_file, "r") as f, open(output, "w") as out:
+        for line in f.readlines():
+            intervals_start, intervals_end = extend(line, win_size, times)
+            string_out += intervals_start
+            string_out += line
+            string_out += intervals_end
+        out.write(string_out)
+    return output
+
+
 if __name__ == "__main__":
-    TEST_NAME = "/home/angri/Desktop/project/special-couscous/randomseq/test/test.gtf"
-    db = load_db(TEST_NAME)
-    bed_df = generate_intervals(db, 100, 10)
-    bed_df.to_csv("test.bed", sep="\t", index=False, header=False)
+    TEST_BED_FILENAME = "random_intervals.bed"
+    WIN_SIZE = 100
+    TIMES = 3
+    # db = load_db(TEST_NAME)
+    print(extend_intervals(TEST_BED_FILENAME, WIN_SIZE, TIMES))

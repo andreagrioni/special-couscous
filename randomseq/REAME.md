@@ -1,12 +1,13 @@
 randomseq
 
-generates nucleotide sequences of ranodm intervals from target genome.
+generates nucleotide sequences of random intervals from target genome.
 
 requirements:
 
-bedtools
-samtools
-Python3.6 or greater;
+conda install pybigwig -c bioconda
+conda install --channel conda-forge --channel bioconda pybedtools
+conda install --channel conda-forge --channel bioconda bedtools htslib
+conda install -c anaconda jupyter
 
 
 Input paramenters:
@@ -20,9 +21,15 @@ output= sequence output name (default:sequence.tsv)
 seed=random seed (default: 1989)
 
 
-usage:
+## usage:
 
+### generate random intervals in BED format
 python randomseq.py \
         --reference path/to/genome/reference/
         --N integer
         --int_size integer
+
+
+### extend input bed file of user defined window:
+
+python randomseq.py --extend --bed random_intervals.bed --extend_win 500 --extend_times 10 --output random_int.extended.bed
