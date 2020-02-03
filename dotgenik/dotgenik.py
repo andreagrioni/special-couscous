@@ -145,7 +145,7 @@ def make_image_batch(args):
     paramenters:
     args=parser object with arguments
     """
-    if ARGS.feature == "all":
+    if not ARGS.feature:
         connections_df = pd.read_csv(
             args.table, sep="\t", names=["x_seq", "y_seq", "label"], header=0
         )
@@ -266,7 +266,6 @@ def get_arguments():
         dest="feature",
         type=str,
         help="load only feature columns separeted by single space",
-        default="all"
         )
 
     args = parser.parse_args()
