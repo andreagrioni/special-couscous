@@ -3,6 +3,7 @@ import re
 import io
 import os
 from modules.extract_sequences import extractor
+import sys
 
 
 def load_targetscan(infile, species):
@@ -10,7 +11,7 @@ def load_targetscan(infile, species):
     return targetscan[targetscan["Species ID"] == species]
 
 
-def format_mirbase_db(infile, win_size):
+def format_mirbase_db(infile, win_size, bed_output="/tmp/mirna_extened.bed"):
     """
     function formats GFF3 file to 
     bed (name as mirna ID).
@@ -20,7 +21,7 @@ def format_mirbase_db(infile, win_size):
     infile=db name
     """
 
-    outfile_name = os.path.basename(infile).replace(".gff3", ".formated.bed")
+    # outfile_name = os.path.basename(infile).replace(".gff3", ".formated.bed")
 
     def get_id(info):
         # extract mirna id from info field
@@ -49,7 +50,7 @@ def format_mirbase_db(infile, win_size):
             new_start = new_end - (win + 1)
             return new_start, end
 
-    with open(infile) as fi:
+    with open(infile) as fi, open(bed_output, "w") as fo:
         new_bed = ""
         for line in fi.readlines():
             if line[0] == "#":
@@ -67,15 +68,11 @@ def format_mirbase_db(infile, win_size):
             mirna_id = get_id(info)
             start, end = resize_mirna(start, end, strand, win_size)
             new_bed += to_bed(chrom, start, end, strand, mirna_id)
-        out = io.StringIO(new_bed)
 
-        intervals_df = pd.read_csv(
-            out,
-            sep="\t",
-            header=None,
-            names=["chromosome", "start", "end", "miRNAid", "clipExpNum", "strand"],
-        )
-    return intervals_df
+        fo.write(new_bed)
+        # out = io.StringIO(new_bed)
+
+    return bed_output
 
 
 def wrapper(
@@ -84,7 +81,7 @@ def wrapper(
     reference,
     cons_track,
     species=9606,
-    win_size=200,
+    win_size=20,
 ):
     """
     function load targetscan and mirbase db, merge then together and retrive
@@ -100,17 +97,26 @@ def wrapper(
     """
 
     # targetscan_df = load_targetscan(targetscan_path, species=species)
-    mirbase_df = format_mirbase_db(mirbase_path, win_size=20)
-    mirbase_seq = extractor(mirbase_df, cons_track, reference)
+    mirbase_df = format_mirbase_db(mirbase_path, win_size)
+    mirbase_seq = extractor(mirbase_df, cons_track, reference, mirna=True)
 
-    # output_df = mirbase_seq.merge(
-    #     targetscan_df, left_on="miRNAid", right_on="MiRBase Accession", how="left"
-    # ).dropna()
-
-    names = ["miRNAid", "binding_cons_score", "binding_sequence"]
+    # names = ["miRNAid", "binding_cons_score", "binding_sequence"]
     # to_return = output_df[names].copy()
-    to_return = mirbase_seq[names].copy()
-    to_return.columns = ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"]
+    # to_return = mirbase_seq[names].copy()
+
+    if reference and cons_track:
+        names = ["miRNAid", "binding_sequence", "binding_cons_score"]
+        to_return = mirbase_seq[names].copy()
+        to_return.columns = ["miRNAid", "mirna_cons_score", "mirna_binding_sequence"]
+    elif not cons_track:
+        names = ["miRNAid", "binding_sequence"]
+        to_return = mirbase_seq[names].copy()
+        to_return.columns = ["miRNAid", "mirna_binding_sequence"]
+    elif not reference:
+        names = ["miRNAid", "binding_cons_score"]
+        to_return = mirbase_seq[names].copy()
+        to_return.columns = ["miRNAid", "mirna_cons_score"]
+
     return to_return
 
 

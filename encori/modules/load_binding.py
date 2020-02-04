@@ -13,8 +13,15 @@ def as_bed(infile, label, anno_df, mask_df, binding_win_size):
     """
     col = ["chromosome", "start", "end", "miRNAid", "clipExpNum", "strand"]
     bed_input = pd.read_csv(infile, sep="\t", names=col)
-    bed_df = cleanup_wrapper(input_df, anno_df, mask_df, binding_win_size)
+    bed_input["miRNAid"] = bed_input.apply(lambda x: x.miRNAid.split(":")[0], axis=1)
+
+    if anno_df and mask_df:
+        bed_df = cleanup_wrapper(bed_input, anno_df, mask_df, binding_win_size)
+    else:
+        bed_df = bed_input.copy()
+
     bed_df["label"] = label
+
     return bed_df
 
 

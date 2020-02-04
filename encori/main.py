@@ -10,36 +10,41 @@ DOCSTRING TODO
 """
 
 if __name__ == "__main__":
-    config_file = sys.argv[1]  # TODO change to argparser
-    target_file = sys.argv[2]
+    config_file = "/home/grioni_andrea/repo/special_couscous/encori/config.json"  # TODO change to argparser
+    # target_file = sys.argv[2]
 
     try:
         output_name = sys.argv[3]
         OPTIONS = output.load_config(config_file, target_file, output_name)
     except:
-        OPTIONS = output.load_config(config_file, target_file)
+        OPTIONS = output.load_config(config_file)
 
     # load DBs
-    print("prepared annotaton and repeat mask db")
-    anno_df, mask_df = prepare_db.load_db(
-        OPTIONS["ENCORI_ANNOTATION"],
-        OPTIONS["ENCORI_BIOTYPE"],
-        OPTIONS["ENCORI_REPEAT_MASK"],
-    )
+    if OPTIONS["ENCORI_ANNOTATION"]:
+        print("prepared annotaton and repeat mask db")
+        anno_df, mask_df = prepare_db.load_db(
+            OPTIONS["ENCORI_ANNOTATION"],
+            OPTIONS["ENCORI_BIOTYPE"],
+            OPTIONS["ENCORI_REPEAT_MASK"],
+        )
+    else:
+        anno_df, mask_df = None, None
     # mirna load
-    print("prepared_mirna_db")
-    mirna_cons_seq_df = mirna_db.wrapper(
-        # OPTIONS["MIRNA_TARGETSCAN_DB"],
-        OPTIONS["MIRNA_DB"],
-        OPTIONS["MIRNA_REF_FASTA"],
-        OPTIONS["MIRNA_CONS_TRACK"],
-        OPTIONS["TARGETSCAN_SPECIES"],
-        OPTIONS["MIRNA_WINDOW"],
-    )
+    if OPTIONS["MIRNA_DB"]:
+        print("prepared_mirna_db")
+        mirna_cons_seq_df = mirna_db.wrapper(
+            # OPTIONS["MIRNA_TARGETSCAN_DB"],
+            OPTIONS["MIRNA_DB"],
+            OPTIONS["MIRNA_REF_FASTA"],
+            OPTIONS["MIRNA_CONS_TRACK"],
+            OPTIONS["TARGETSCAN_SPECIES"],
+            OPTIONS["MIRNA_WINDOW"],
+        )
 
     # ENCORI load and cleanup
     if OPTIONS["ENCORI_PATH"]:
         print("load and cleanup ENCORI DB")
+        sys.exit()
         binding_df = load_binding.load_encori(
             OPTIONS["ENCORI_PATH"],
             anno_df,
@@ -52,7 +57,7 @@ if __name__ == "__main__":
     elif OPTIONS["BINDING_BED"]:
         print("load external file (not ENCORI)")
         binding_df = load_binding.as_bed(
-            OPTIONS["NEGATIVE"],
+            OPTIONS["BINDING_BED"],
             OPTIONS["BINDING_BED_LABEL"],
             anno_df,
             mask_df,
@@ -62,9 +67,10 @@ if __name__ == "__main__":
         print("unknown operation")
         sys.exit()
 
+    print("binding_df:", binding_df.shape, sep="\t")
     # combine df
     combine_encori_mirna_df = prepare_db.combine_df(binding_df, mirna_cons_seq_df)
-
+    print("combine_encori_mirna_df:", combine_encori_mirna_df.shape, sep="\t")
     if OPTIONS["NEGATIVE_SAMPLES"]:
         print("generate negative samples")
         if OPTIONS["SHUFFLE_POSITIVES_TO_NEGATIVE"]:
@@ -73,13 +79,6 @@ if __name__ == "__main__":
             )
         else:
             pass
-            # combine_encori_mirna_df = load_bindings.get_negatives(
-            #     OPTIONS["NEGATIVE_SAMPLES"],
-            #     mirna_cons_seq_df,
-            #     anno_df,
-            #     mask_df,
-            #     OPTIONS["BINDING_WINDOWS"],
-            # )
 
     ## extract sequences (cons and nt)
     print("get sequences and conservations")
@@ -89,6 +88,7 @@ if __name__ == "__main__":
         OPTIONS["ENCORI_REF_FASTA"],
     )
 
+    print("binding_cons_seq_df:", binding_cons_seq_df, sep="\t")
     ## print output
     print("writing output table")
     output.generate_table(
