@@ -67,12 +67,7 @@ def get_negatives(
 
 
 def load_encori(
-    file_path,
-    anno_df,
-    mask_df,
-    binding_win_size,
-    negative_sample_size,
-    negative_from_shuffle_positive,
+    file_path, anno_df, mask_df, binding_win_size,
 ):
     """
     function loads encori table as pandas df and 
@@ -83,8 +78,6 @@ def load_encori(
     anno_df=pandas df of annotation
     mask_df=pandas df of repeat mask
     binding_win_size=binding window size (int)
-    negative_sample_size=number of negatives (int)
-    shuffle_positive=negatives samples by random shuffling miRNA from positive dataset (bool)
     """
     # load encori
     df_encori = pd.read_csv(file_path, comment="#", sep="\t")

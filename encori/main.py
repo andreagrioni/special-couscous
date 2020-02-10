@@ -44,14 +44,8 @@ if __name__ == "__main__":
     # ENCORI load and cleanup
     if OPTIONS["ENCORI_PATH"]:
         print("load and cleanup ENCORI DB")
-        sys.exit()
         binding_df = load_binding.load_encori(
-            OPTIONS["ENCORI_PATH"],
-            anno_df,
-            mask_df,
-            OPTIONS["BINDING_WINDOW"],
-            OPTIONS["NEGATIVE_SAMPLES"],
-            OPTIONS["SHUFFLE_POSITIVES_TO_NEGATIVE"],
+            OPTIONS["ENCORI_PATH"], anno_df, mask_df, OPTIONS["BINDING_WINDOWS"],
         )
 
     elif OPTIONS["BINDING_BED"]:
@@ -87,9 +81,6 @@ if __name__ == "__main__":
         OPTIONS["ENCORI_CONS_TRACK"],
         OPTIONS["ENCORI_REF_FASTA"],
     )
-
-    print("binding_cons_seq_df:", binding_cons_seq_df, sep="\t")
-    ## print output
     print("writing output table")
     output.generate_table(
         binding_cons_seq_df, OPTIONS["OUTPUT_COLUMNS"], OPTIONS["OUTPUT_TABLE_PATH"],
