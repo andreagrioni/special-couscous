@@ -34,3 +34,18 @@ sudo apt install git
 
 git config --global user.email "@gmail.com"
 git config --global user.name ""
+
+
+## install R-Studio Server
+# add R package repo to /etc/apt/sources.list
+URL='# add R package repo to /etc/apt/sources.list\ndeb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+echo -e $URL >> /etc/apt/sources.list
+sudo apt-get update
+sudo apt-get install r-base
+## if GPG error you need to add key to apt-key by
+# sudo apt-key adv --keyserver keys.gnupg.net --recv-keys
+sudo apt-get install r-base
+# install RStudio
+sudo apt-get install gdebi-core
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.5033-amd64.deb
+sudo gdebi rstudio-server-1.2.5033-amd64.deb
