@@ -7,6 +7,9 @@
 sudo apt-get update
 sudo apt-get upgrade
 
+## nodejs for Visual Studio Code
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt-get install -y nodejs
 ## download Anaconda
 wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
 chmod +x Anaconda3-2019.10-Linux-x86_64.sh
