@@ -37,6 +37,7 @@ git config --global user.name ""
 
 
 ## install R-Studio Server
+# more details:https://grantmcdermott.com/2017/05/30/rstudio-server-compute-engine/
 # add R package repo to /etc/apt/sources.list
 URL='# add R package repo to /etc/apt/sources.list\ndeb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
 echo -e $URL >> /etc/apt/sources.list
